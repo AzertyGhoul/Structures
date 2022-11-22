@@ -15,7 +15,7 @@ int hash(char *secondName)
 
 bool equal(char *item, char *target)
 {
-    for (int i = 0; item[i] != '\0' | target[i] != '\0'; i++)
+    for (int i = 0; target[i] != '\0'; i++)
     {
         if (item[i] != target[i])
         {
@@ -26,7 +26,7 @@ bool equal(char *item, char *target)
     return true;
 }
 
-void addItem(std::string path)
+void addItem(char *path)
 {
     company add;
 
@@ -34,32 +34,18 @@ void addItem(std::string path)
 
     std::cout << "\nEnter name : ";
     std::cin.ignore();
-    gets_s(add.nameCompany, 20);
+    std::cin.get(add.nameCompany, 20);
 
     std::cout << "\nEnter count of employee : ";
     std::cin >> add.count;
 
     file.open(path, std::ios::in | std::ios::out | std::ios::binary);
-
-    if (file.is_open())
-    {
-        company tmp;
-
-        file.seekp(hash(add.nameCompany));
-        file.read(reinterpret_cast<char *>(&tmp), sizeof(company));
-
-        if (tmp.nameCompany[0] == add.nameCompany[0])
-        {
-            std::string path = std::string() + add.nameCompany[0] + ".dat";
-            std::cout << path;
-        }
-
-        file.write(reinterpret_cast<char *>(&add), sizeof(company));
-        file.close();
-    }
+    file.seekg(hash(add.nameCompany));
+    file.write(reinterpret_cast<char *>(&add), sizeof(company));
+    file.close();
 }
 
-void searchItem(std::string path)
+void searchItem(char *path)
 {
     std::fstream file;
     char targetName[20];
@@ -67,7 +53,7 @@ void searchItem(std::string path)
 
     std::cout << "\nEnter target name : ";
     std::cin.ignore();
-    gets_s(targetName, 20);
+    std::cin.get(targetName, 20);
 
     file.open(path, std::ios::in | std::ios::binary);
     file.seekg(hash(targetName));
@@ -84,7 +70,7 @@ void searchItem(std::string path)
     }
 };
 
-void print(std::string path)
+void print(char *path)
 {
     company item;
     int size = 0;
@@ -109,7 +95,7 @@ void print(std::string path)
     }
 }
 
-void menu(std::string path)
+void menu(char *path)
 {
     int option = 0;
 
@@ -149,10 +135,8 @@ void menu(std::string path)
 
 int main()
 {
-    std::string path = "company.dat";
-
-    std::fstream file;
-    file.open(path, std::ios::out | std::ios::binary);
+    char path[] = "company.dat";
+    FILE *f = fopen(path, "r+b");
 
     menu(path);
 }
