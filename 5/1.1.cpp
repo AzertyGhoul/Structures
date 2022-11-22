@@ -1,3 +1,4 @@
+#include <SFML/Graphics.hpp>
 #include <iostream>
 
 const int maxV = 122;
@@ -17,23 +18,37 @@ int main()
 
     int keys[526];
 
-    for (int i = 0; i <= 525; i++)
+    for (int i = 0; i <= 526; i++)
     {
         keys[i] = 0;
     }
 
-    for (int i = 0; i < 100000; i++)
+    for (int i = 0; i < 1000; i++)
     {
         char letter = rand() % (maxV - minV + 1) + minV;
         int numberOfAddress = hash(letter);
         keys[numberOfAddress]++;
     }
 
-    for (int i = 0; i <= 525; i++)
+    sf::RenderWindow window(sf::VideoMode(525, 400), "5Lab");
+    sf::VertexArray curve(sf::Lines, 800);
+
+    while (window.isOpen())
     {
-        if (keys[i] != 0)
+        sf::Event event;
+        while (window.pollEvent(event))
         {
-            std::cout << keys[i] << " ";
+            if (event.type == sf::Event::Closed)
+                window.close();
         }
+        window.clear();
+
+        for (int i = 0; i < 800; i++)
+        {
+            curve.append(sf::Vertex(sf::Vector2f(i, 350 - keys[i])));
+            window.draw(curve);
+        }
+        window.display();
     }
+    return 0;
 }
