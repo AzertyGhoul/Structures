@@ -26,9 +26,10 @@ bool equal(char *item, char *target)
     return true;
 }
 
-void addItem(char *path)
+void addItem(std::string path)
 {
     company add;
+    company check;
 
     std::fstream file;
 
@@ -41,11 +42,28 @@ void addItem(char *path)
 
     file.open(path, std::ios::in | std::ios::out | std::ios::binary);
     file.seekg(hash(add.nameCompany));
-    file.write(reinterpret_cast<char *>(&add), sizeof(company));
-    file.close();
+    file.read(reinterpret_cast<char *>(&check), sizeof(company));
+
+    if (check.nameCompany[0] != '\0')
+    {
+        path = std::string() + check.nameCompany[0] + ".dat";
+        std::fstream colFile(path, std::ios::app | std::ios::binary);
+
+        colFile.write(reinterpret_cast<char *>(&add), sizeof(company));
+        colFile.close();
+        file.close();
+    }
+    else
+    {
+        file.close();
+        file.open(path, std::ios::in | std::ios::out | std::ios::binary);
+        file.seekg(hash(add.nameCompany));
+        file.write(reinterpret_cast<char *>(&add), sizeof(company));
+        file.close();
+    }
 }
 
-void searchItem(char *path)
+void searchItem(std::string path)
 {
     std::fstream file;
     char targetName[20];
@@ -70,32 +88,38 @@ void searchItem(char *path)
     }
 };
 
-void print(char *path)
+void print(std::string path, int counter = 0)
 {
     company item;
-    int size = 0;
     std::fstream file;
-
-    std::cout << "\nText from file\n";
 
     file.open(path, std::ios::in | std::ios::binary);
 
     file.seekg(0, std::ios::end);
-    size = (int)file.tellg() / sizeof(company);
+    int size = file.tellg() / sizeof(company);
     file.seekg(0);
 
     for (int i = 0; i < size; i++)
     {
-        file.read((char *)&item, sizeof(company));
+        file.read(reinterpret_cast<char *>(&item), sizeof(company));
         if (item.nameCompany[0] != '\0')
         {
             std::cout << "\nCompany name : " << item.nameCompany << "\n";
             std::cout << "Employee : " << item.count << "\n";
+
+            if (counter == 0)
+            {
+                path = std::string() + item.nameCompany[0] + ".dat";
+                print(path, 1);
+            }
         }
     }
+
+    file.close();
+    return;
 }
 
-void menu(char *path)
+void menu(std::string path)
 {
     int option = 0;
 
@@ -120,6 +144,7 @@ void menu(char *path)
         break;
 
     case 3:
+        std::cout << "\nText from file\n";
         print(path);
         menu(path);
         break;
@@ -135,8 +160,10 @@ void menu(char *path)
 
 int main()
 {
-    char path[] = "company.dat";
-    FILE *f = fopen(path, "r+b");
+    std::string path = "company.dat";
+    std::fstream file;
+
+    file.open(path, std::ios::out | std::ios::binary);
 
     menu(path);
 }
